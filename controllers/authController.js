@@ -102,7 +102,26 @@ const loginUser = async (req, res) => {
     }
 }
 
+
+const getProfile = async (req,res) => {
+    try {
+        const user_id = req.user._id;
+        const userData = await User.findOne({_id: user_id});
+
+        return res.status(200).json({
+            success: true,
+            msg: "profile data",
+            data: userData
+        }); 
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
+}
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    getProfile
 }
