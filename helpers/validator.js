@@ -6,3 +6,11 @@ exports.registerValidator = [
     }),
     check('password', 'Please enter password').not().isEmpty()
 ]
+
+
+exports.loginValidator = [
+    check('email', 'Please enter valid email').isEmail().normalizeEmail({
+        gmail_remove_dots: true
+    }),
+    check('password', 'Please enter password').not().isEmpty()
+]

@@ -1,12 +1,13 @@
 const User = require('../models/userModel');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 // const express = require('express');
 // const router = express();
 
 
 const registerUser = async (req, res) => {
-   //console.log(req.body);
+    //console.log(req.body);
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -50,6 +51,58 @@ const registerUser = async (req, res) => {
     }
 }
 
+const generateAccessToken = async (user) => {
+    const token = jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, { expiresIn: "2h" });
+    return token;
+}
+
+
+const loginUser = async (req, res) => {
+    //console.log(req.body);
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(200).json({
+                success: false,
+                msg: 'Errors',
+                errors: errors.array()
+            });
+        }
+
+        const { email, password } = req.body;
+        const userData = await User.findOne({ email });
+        if (!userData) {
+            return res.status(400).json({
+                success: false,
+                msg: "Email not found"
+            });
+        }
+
+        const isPasswordMatch = await bcrypt.compare(password, userData.password);
+        if (!isPasswordMatch) {
+            return res.status(400).json({
+                success: false,
+                msg: "Password is incorrect"
+            });
+        }
+        const accessToken = await generateAccessToken({user:userData});
+        return res.status(200).json({
+            success: true,
+            msg: "Login Successfully..!!",
+            type: "Bearer",
+            token:accessToken,
+            data: userData
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
+}
+
 module.exports = {
-    registerUser
+    registerUser,
+    loginUser
 }
