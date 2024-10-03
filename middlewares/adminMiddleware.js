@@ -13,7 +13,6 @@ const onlyAdminAccess = async (req, res, next) => {
             msg: "Something went wrong"
         });
     }
-
     return next();
 }
 

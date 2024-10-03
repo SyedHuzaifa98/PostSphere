@@ -22,6 +22,11 @@ app.use('/api', authRoute);
 const adminRoute = require('./routes/adminRoute');
 app.use('/api/admin', adminRoute);
 
+
+// Category route
+const commonRoute = require('./routes/commonRoute');
+app.use('/api', commonRoute);
+
 const port = process.env.SERVER_PORT | 8000;
 
 app.listen(port, () => {
