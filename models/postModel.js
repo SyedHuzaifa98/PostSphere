@@ -8,13 +8,14 @@ const postSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    categories: {
-        type: Array,
-        required: true
-    },
-   
+    categories: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: false
+    }],
+
 
 })
 
 
-module.exports = mongoose.model('Post',postSchema);
+module.exports = mongoose.model('Post', postSchema);
