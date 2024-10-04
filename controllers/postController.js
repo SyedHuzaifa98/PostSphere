@@ -64,100 +64,92 @@ const getPosts = async (req, res) => {
 }
 
 
-// const deleteCategory = async (req, res) => {
-//     try {
+const deletePost = async (req, res) => {
+    try {
 
-//         const errors = validationResult(req);
-//         if (!errors.isEmpty()) {
-//             return res.status(200).json({
-//                 success: false,
-//                 msg: 'Errors',
-//                 errors: errors.array()
-//             });
-//         }
-//         const { id } = req.body;
-//         const categoryData = await Category.findOne({ _id: id });
-//         if (!categoryData) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: "Category ID doesn't exist"
-//             });
-//         }
-//         await Category.findByIdAndDelete({
-//             _id: id
-//         });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(200).json({
+                success: false,
+                msg: 'Errors',
+                errors: errors.array()
+            });
+        }
 
-//         return res.status(200).json({
-//             success: true,
-//             msg: "Category deleted successfully..!!"
-//         });
+        const { id } = req.body;
+        const isExists = await Post.findOne({ _id: id });
+        if (!isExists) {
+            return res.status(400).json({
+                success: false,
+                msg: "Posts doesn't exist"
+            });
+        }
 
+        await Post.findByIdAndDelete({ _id: id });
 
-
-//     } catch (error) {
-//         return res.status(400).json({
-//             success: false,
-//             msg: error.message
-//         });
-//     }
-// }
-
-
-// const updateCategory = async (req, res) => {
-//     try {
-//         const errors = validationResult(req);
-//         if (!errors.isEmpty()) {
-//             return res.status(200).json({
-//                 success: false,
-//                 msg: 'Errors',
-//                 errors: errors.array()
-//             });
-//         }
-//         const { id, category_name } = req.body;
-//         const categoryData = await Category.findOne({ _id: id });
-//         if (!categoryData) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: "Category ID doesn't exist"
-//             });
-//         }
-//         const isExists = await Category.findOne({
-//             _id: {$ne:id},
-//             name: {
-//                 $regex: category_name,
-//                 $options: "i"
-//             }
-//         });
-
-//         if (isExists) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: "Category name already already assigned to another category"
-//             });
-//         }
-
-//         const updatedData = await Category.findByIdAndUpdate(
-//             { _id: id, },
-//             { $set: { name: category_name } },
-//             { new: true }
-//         );
-
-//         return res.status(200).json({
-//             success: true,
-//             msg: "Category updated successfully..!!",
-//             data: updatedData
-//         });
+        return res.status(200).json({
+            success: true,
+            msg: "Post deleted successfully..!!"
+        });
 
 
 
-//     } catch (error) {
-//         return res.status(400).json({
-//             success: false,
-//             msg: error.message
-//         });
-//     }
-// }
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
+}
+
+
+const updatePost = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(200).json({
+                success: false,
+                msg: 'Errors',
+                errors: errors.array()
+            });
+        }
+        const { id, title, description } = req.body;
+        const isExists = await Post.findOne({ _id: id });
+        if (!isExists) {
+            return res.status(400).json({
+                success: false,
+                msg: "Post doesn't exist"
+            });
+        }
+        var updateObj = {
+            title,
+            description,
+        }
+        if(req.body.categories){
+            updateObj.categories = req.body.categories
+        }
+        const updatedPost = await Post.findByIdAndUpdate(
+            { _id: id }, 
+            { $set: updateObj }, 
+            { new: true }
+        );
+
+        return res.status(200).json({
+            success:true,
+            msg:"Post updated successfully",
+            data: updatedPost
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
+}
 module.exports = {
     createPost,
-    getPosts
+    getPosts,
+    deletePost,
+    updatePost
 }
