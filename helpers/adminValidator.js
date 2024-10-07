@@ -46,3 +46,11 @@ exports.updatePostValidator = [
     check('title', 'title required').not().isEmpty(),
     check('description', 'description is required').not().isEmpty()
 ]
+
+
+
+
+exports.storeRoleValidator = [
+    check('role_name', 'role_name required').not().isEmpty(),
+    check('value', 'value required').not().isEmpty(),
+]
