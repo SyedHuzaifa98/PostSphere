@@ -9,7 +9,7 @@ const {
     deletePostValidator,
     updatePostValidator
 } = require('../helpers/adminValidator');
-const { createUserValidator } = require('../helpers/validator');
+const { createUserValidator, updateUserValidator } = require('../helpers/validator');
 const categoryController = require('../controllers/categoryController');
 const postController = require('../controllers/postController');
 const userController = require('../controllers/userController');
@@ -31,6 +31,8 @@ router.post('/update-post', auth, updatePostValidator, postController.updatePost
 
 //user routes
 router.post('/create-user', auth, createUserValidator, userController.createUser);
+router.get('/get-users', auth, createUserValidator, userController.getUsers);
+router.post('/update-user', auth, updateUserValidator, userController.updateUser);
 
 
 module.exports = router

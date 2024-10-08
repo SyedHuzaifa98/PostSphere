@@ -22,3 +22,9 @@ exports.createUserValidator = [
         gmail_remove_dots: true
     })
 ]
+
+
+exports.updateUserValidator = [
+    check('id', 'id is required').not().isEmpty(),
+    check('name', 'Name is required').not().isEmpty()
+]
