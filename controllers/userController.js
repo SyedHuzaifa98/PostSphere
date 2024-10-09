@@ -147,8 +147,47 @@ const updateUser = async (req, res) => {
         });
     }
 }
+
+
+const deleteUser = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                msg: 'Errors:',
+                errors: errors.array()
+            });
+        }
+        const { id, name } = req.body;
+        const isExists = await User.findOne({
+            _id: id
+        });
+
+        if (!isExists) {
+            return res.status(400).json({
+                success: false,
+                msg: 'User not exists!'
+            });
+        }
+        await User.findByIdAndDelete({
+            _id:id
+        });
+
+        return res.status(200).json({
+            success:true,
+            msg:"User deleted successfully",
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message,
+        });
+    }
+}
 module.exports = {
     createUser,
     getUsers,
-    updateUser
+    updateUser,
+    deleteUser
 }
