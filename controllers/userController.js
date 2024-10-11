@@ -1,8 +1,11 @@
 const { validationResult } = require('express-validator');
 const User = require('../models/userModel');
+const Permission = require('../models/permissionModel');
+const UserPermission = require('../models/userPermissionModel');
 const { sendMail } = require('../helpers/mailer');
 const bcrypt = require('bcrypt');
 const randomstring = require('randomstring');
+const { default: mongoose } = require('mongoose');
 const createUser = async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -43,6 +46,37 @@ const createUser = async (req, res) => {
         }
         const user = User(obj);
         const userData = await user.save();
+
+        // add permission to user if coming in request
+        if (req.body.permissions != undefined && req.body.permissions.length > 0) {
+            console.log("Hello");
+            const addPermission = req.body.permissions;
+            console.log(addPermission)
+            const permissionArray = [];
+            // we inserted mapping code in Promise.all() because we want untill this mapping will not completed 
+            // not run userPermission code 
+            await Promise.all(
+                addPermission.map(async (permission) => {
+                    const permissionData = await Permission.findOne({ _id: permission.id });
+
+                    permissionArray.push({
+                        permission_name: permissionData.permission_name,
+                        permission_value: permission.value
+                    });
+                })
+            );
+            //console.log(permissionArray);
+            const userPermission = new UserPermission({
+                user_id: userData._id,
+                permissions: permissionArray
+            });
+
+            await userPermission.save();
+
+        }
+
+
+
         console.log(password);
         const content = `
         <p>Hii <b>`+ userData.name + `</b> Your account is created , below is your details.</p>
@@ -80,11 +114,56 @@ const createUser = async (req, res) => {
 }
 const getUsers = async (req, res) => {
     try {
-        const users = await User.find({
-            _id: {
-                $ne: req.user._id
-            }
-        });
+        // const users = await User.find({
+        //     _id: {
+        //         $ne: req.user._id
+        //     }
+        // });
+
+        // get user data with all permissions
+        const users = await User.aggregate(
+            [
+                {
+                    $match: { _id: { $ne: new mongoose.Types.ObjectId(req.user._id) } } // $match means from which column of User you want to match
+                },
+                {
+                    $lookup: {
+                        from: "userpermissions", // 'from' table name from which User is connected in which User id entered as foreing key
+                        localField: "_id", // 'localField' in this we write primary key of current table e.g 'User'
+                        foreignField: "user_id", // 'foreignField' in this we write column foreign key in from table
+                        as: "permissions" // 'as' means we defining key name in which we want data that we bringing
+                    }
+                },
+                {
+                    // in 'project' object we define which keys we want 0 means we dont want 1 means we want
+                    $project: {
+                        _id: 0,
+                        name: 1,
+                        email: 1,
+                        role: 1,
+                        //permissions:1  if this we do it return array that is not good we have to sent in object
+
+                        permissions: {
+                            $cond: {
+                                if: { $isArray: "$permissions" },
+                                then: { $arrayElemAt: ["$permissions", 0] },// default $permissions given an array 
+                                //so we take 0 index object from array
+                                else: null // in null case if some user have not any permissions then 
+                                //it is not returing permissions key in this case it 
+                                //should return like this permissions:{} , so for this we add addfields it add another key
+                            }
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        "permissions": {
+                            "permissions": "$permissions.permissions"
+                        }
+                    }
+                }
+            ]
+        );
         return res.status(200).json({
             success: true,
             msg: "User Fetched Successfully!",
@@ -171,12 +250,12 @@ const deleteUser = async (req, res) => {
             });
         }
         await User.findByIdAndDelete({
-            _id:id
+            _id: id
         });
 
         return res.status(200).json({
-            success:true,
-            msg:"User deleted successfully",
+            success: true,
+            msg: "User deleted successfully",
         });
     } catch (error) {
         return res.status(400).json({
