@@ -106,12 +106,60 @@ const loginUser = async (req, res) => {
             });
         }
         const accessToken = await generateAccessToken({ user: userData });
+
+        // get user data with all permissions
+        const result = await User.aggregate(
+        [ 
+            {
+                $match: { email: userData.email} // $match means from which column of User you want to match
+            },
+            {
+                $lookup:{
+                    from:"userpermissions", // 'from' table name from which User is connected in which User id entered as foreing key
+                    localField:"_id", // 'localField' in this we write primary key of current table e.g 'User'
+                    foreignField:"user_id", // 'foreignField' in this we write column foreign key in from table
+                    as:"permissions" // 'as' means we defining key name in which we want data that we bringing
+                }
+            },
+            { 
+                // in 'project' object we define which keys we want 0 means we dont want 1 means we want
+                $project:{
+                    _id: 0,
+                    name: 1,
+                    email:1,
+                    role:1,
+                    //permissions:1  if this we do it return array that is not good we have to sent in object
+                    
+                    permissions:{
+                        $cond: {
+                            if:{ $isArray: "$permissions"  },
+                            then:{ $arrayElemAt: ["$permissions",0] },// default $permissions given an array 
+                                                                    //so we take 0 index object from array
+                            else: null // in null case if some user have not any permissions then 
+                            //it is not returing permissions key in this case it 
+                            //should return like this permissions:{} , so for this we add addfields it add another key
+                        }
+                    }
+                }
+            },
+            {
+                $addFields:{
+                    "permissions":{
+                        "permissions":"$permissions.permissions"
+                    }
+                }
+            }
+        ]
+        );
+
+
+
         return res.status(200).json({
             success: true,
             msg: "Login Successfully..!!",
             type: "Bearer",
             token: accessToken,
-            data: userData
+            data: result
         });
 
     } catch (error) {
