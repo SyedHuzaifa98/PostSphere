@@ -214,6 +214,55 @@ const updateUser = async (req, res) => {
             }
         );
 
+        // add permission to user if coming in request
+        if (req.body.permissions != undefined && req.body.permissions.length > 0) {
+            console.log("Hello");
+            const addPermission = req.body.permissions;
+            console.log(addPermission)
+            const permissionArray = [];
+            // we inserted mapping code in Promise.all() because we want untill this mapping will not completed 
+            // not run userPermission code 
+            await Promise.all(
+                addPermission.map(async (permission) => {
+                    const permissionData = await Permission.findOne({ _id: permission.id });
+
+                    permissionArray.push({
+                        permission_name: permissionData.permission_name,
+                        permission_value: permission.value
+                    });
+                })
+            );
+            await UserPermission.findOneAndUpdate(
+                { user_id: updatedData._id },
+                {
+                    permissions: permissionArray
+                },
+                {
+                    upsert: true,
+                    new: true,
+                    setDefaultsOnInsert: true
+                }
+                // upsert: true
+                //     Purpose: If set to true, MongoDB will create a new document 
+                //     if no document matches the filter.
+                //     In Context: Ensures that if there's no 
+                //     existing UserPermission document for the specified user_id, 
+                //     a new one will be created with the provided permissions.
+
+                // new: true
+                //     Purpose: When set to true, the method returns the updated document. 
+                //     By default, it returns the document as it was before the update.
+                //     In Context: After the update operation, you receive the latest version 
+                //     of the document, which includes the updated permissions.
+
+                // setDefaultsOnInsert: true
+                //     Purpose: When creating a new document via upsert, this option ensures that default values 
+                //     specified in the Mongoose schema are applied.
+                //     In Context: If a new UserPermission document is created 
+                //     (because one didn't exist for the user_id), it will include 
+                //         any default values defined in the schema, ensuring data consistency.
+            );
+        }
         return res.status(200).json({
             success: true,
             msg: "User Updated Successfully!",

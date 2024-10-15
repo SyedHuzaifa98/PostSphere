@@ -43,6 +43,8 @@ router.post('/update-user', auth, updateUserValidator, userController.updateUser
 router.post('/delete-user', auth, deleteUserValidator, userController.deleteUser);
 
 
+
+
 // like route
 router.post('/post-like', auth, postLikeUnlikeValidator, likeController.postLike);
 router.post('/post-unlike', auth, postLikeUnlikeValidator, likeController.postUnLike);
