@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express();
+const router = express.Router();
 const auth = require('../middlewares/authMiddleware');
 const {
     categoryAddValidator,
@@ -49,6 +49,7 @@ router.post('/delete-user', auth, deleteUserValidator, userController.deleteUser
 router.post('/post-like', auth, postLikeUnlikeValidator, likeController.postLike);
 router.post('/post-unlike', auth, postLikeUnlikeValidator, likeController.postUnLike);
 router.post('/post-like-count', auth, postLikeCountValidator, likeController.postLikeCount);
+
 
 
 module.exports = router

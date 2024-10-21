@@ -23,6 +23,14 @@ const adminRoute = require('./routes/adminRoute');
 app.use('/api/admin', adminRoute);
 
 
+const auth = require('./middlewares/authMiddleware');
+const { onlyAdminAccess } = require('./middlewares/adminMiddleware');
+const routerController = require('./controllers/admin/routerController'); 
+
+
+app.get('/api/admin/all-routes', auth,onlyAdminAccess, routerController.getAllRoutes);
+
+
 // Category route
 const commonRoute = require('./routes/commonRoute');
 app.use('/api', commonRoute);
