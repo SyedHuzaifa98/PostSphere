@@ -10,7 +10,7 @@ const routePermissionSchema = new mongoose.Schema({
         required: true, 
     },
     permission:{
-        type:Number, // 0,1,2,3
+        type:Array, // 0,1,2,3
         required:true
     }
 
