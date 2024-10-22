@@ -39,7 +39,6 @@ const addRouterPermission = async (req, res) => {
                 success: false,
                 msg: 'Errors',
                 errors: errors.array()
-
             });
         }
 
@@ -64,7 +63,39 @@ const addRouterPermission = async (req, res) => {
     }
 }
 
+
+
+const getRouterPermission = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(200).json({
+                success: false,
+                msg: 'Errors',
+                errors: errors.array()
+            });
+        }
+
+
+        const { router_endpoint } = req.body;
+        const routerPermissions = await RouterPermission.find({
+            router_endpoint
+        });
+        return res.status(200).json({
+            success: true,
+            msg: 'Router Permissions',
+            data: routerPermissions
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
+}
 module.exports = {
     getAllRoutes,
-    addRouterPermission
+    addRouterPermission,
+    getRouterPermission
 }

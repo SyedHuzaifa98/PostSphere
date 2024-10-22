@@ -10,7 +10,9 @@ const { permissionAddValidator,
     permissionDeleteValidator,
     permissionUpdateValidator,
     storeRoleValidator,
-    addRouterPermissionValidator } = require('../helpers/adminValidator');
+    addRouterPermissionValidator,
+    getRouterPermissionValidator
+} = require('../helpers/adminValidator');
 const { onlyAdminAccess } = require('../middlewares/adminMiddleware');
 
 // below is 'registerValidator' is middleware used apply on req
@@ -30,6 +32,7 @@ router.get('/get-roles', auth, onlyAdminAccess, roleController.getRoles);
 
 // router permission routes
 router.post('/add-router-permission', auth, onlyAdminAccess,addRouterPermissionValidator, routerController.addRouterPermission);
+router.post('/get-router-permissions', auth, onlyAdminAccess,getRouterPermissionValidator, routerController.getRouterPermission);
 
 
 module.exports = router
